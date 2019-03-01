@@ -209,11 +209,18 @@ void draw_scene(void) {
 
 void calculate_lookpoint(void) { /* Given an eyepoint and latitude and longitude angles, will
      compute a look point one unit away */
-
+  float temp;
+  float sum_lat = lat;
+  float sum_lon = lon + mlon;
+  temp = lat + mlat;
+  if(temp < 90 && temp > -90)
+  {
+    sum_lat = temp;
+  }
   /* To be completed */
-  GLfloat dir_x = cos(DEG_TO_RAD*lat) * sin(DEG_TO_RAD*lon);
-  GLfloat dir_y = sin(DEG_TO_RAD*lat);
-  GLfloat dir_z = cos(DEG_TO_RAD*lat) * cos(DEG_TO_RAD*lon);
+  GLfloat dir_x = cos(DEG_TO_RAD*sum_lat) * sin(DEG_TO_RAD*sum_lon);
+  GLfloat dir_y = sin(DEG_TO_RAD*sum_lat);
+  GLfloat dir_z = cos(DEG_TO_RAD*sum_lat) * cos(DEG_TO_RAD*sum_lon);
 
   centerx = eyex + dir_x;
   centery = eyey + dir_y;
@@ -267,13 +274,8 @@ void reshape(int w, int h) {
 void mouse_motion(int x, int y) {
 
   /* To be completed */
-  lon = lon - mlon;
-  lat = lat - mlat;
   mlon = -100.0 / width * x + 50.0;
   mlat = -100.0 / height * y + 50.0;
-  lon = lon + mlon;
-  lat = lat + mlat;
-
 } // mouse_motion()
 
 //////////////////////////////////////////////
@@ -330,18 +332,20 @@ void cursor_keys(int key, int x, int y) {
     case GLUT_KEY_LEFT:
       // rotate to the left
       temp = lon + TURN_ANGLE;
-      if(temp < 90 && temp > -90)
-      {
-        lon = temp;
-      }
+      lon = temp;
+      // if(temp < 90 && temp > -90)
+      // {
+      //   lon = temp;
+      // }
       break;
     case GLUT_KEY_RIGHT:
       // rotate to the right
       temp = lon - TURN_ANGLE;
-      if(temp < 90 && temp > -90)
-      {
-        lon = temp;
-      }
+      lon = temp;
+      // if(temp < 90 && temp > -90)
+      // {
+      //   lon = temp;
+      // }
       break;
     case GLUT_KEY_PAGE_UP:
       // tilt up
