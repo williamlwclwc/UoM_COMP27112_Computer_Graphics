@@ -52,9 +52,10 @@ body  bodies[MAX_BODIES];
 int   numBodies, current_view, draw_orbits, draw_labels, draw_starfield;
 float  date;
 int draw_axs;
-GLdouble lat = 20, lon = 20;
+float stars[3000];
+GLdouble lat = 0, lon = 0;
 GLfloat dir_x, dir_y, dir_z;
-GLfloat eyex = 0, eyey = 0, eyez = 0;
+GLfloat eyex = 0, eyey = 0, eyez = -300*MILLION;
 
 
 /*****************************/
@@ -68,14 +69,22 @@ float myRand (void)
 
 /*****************************/
 
-void drawStarfield (void)
+void starfieldGenerator(float *stars)
+{
+  for(int i = 0; i < 3000; i++)
+  {
+    stars[i] = (myRand()-myRand())*300*MILLION;
+  }
+}
+
+void drawStarfield (float *stars)
 {
   /* This is for you to complete. */
   glBegin(GL_POINTS);
   glColor3f(1, 1, 1);
-  for(int i = 0; i < 1000; i++)
+  for(int i = 0; i < 3000; i++)
   {
-    glVertex3f((myRand()-myRand())*300*MILLION, (myRand()-myRand())*300*MILLION, (myRand()-myRand())*300*MILLION);
+    glVertex3f(stars[i], stars[i+1], stars[i+3]);
   }
   glEnd();
 }
@@ -143,7 +152,7 @@ void setView (void) {
   case ECLIPTIC_VIEW:
     /* This is for you to complete. */
     // from far out z axis
-    gluLookAt(0.1, 0.1, 550.0*MILLION,  // camera position 
+    gluLookAt(0.1, 0.1, 400.0*MILLION,  // camera position 
               0.0, 0.0, 0.0,    // point to look at
               0.0, 1.0, 0.0 );  // "upright" vector
     break;  
@@ -153,8 +162,8 @@ void setView (void) {
     dir_x = 300*MILLION* cos(DEG_TO_RAD * lat) * sin(DEG_TO_RAD * lon);
     dir_y = 300*MILLION* sin(DEG_TO_RAD * lat);
     dir_z = 300*MILLION* cos(DEG_TO_RAD * lat) * cos(DEG_TO_RAD * lon);
-    gluLookAt(dir_x + eyex, dir_y + eyey, dir_z + eyez,
-              eyex, eyey, eyez,
+    gluLookAt(eyex, eyey, eyez,
+              dir_x + eyex, dir_y + eyey, dir_z + eyez,
               0.0, 1.0, 0.0);
     // gluLookAt(400*MILLION, 400*MILLION, 50*MILLION,  
     //           0.0, 0.0, 0.0,    
@@ -292,6 +301,9 @@ void drawBody(int n)
     int parent = bodies[n].orbits_body;
     if(parent != 0)
     {
+      // Totilt: tilted orbit
+      glRotatef(bodies[parent].orbital_tilt, 0.0, 0.0, 1.0);
+
       // Torb:
       glTranslatef(bodies[parent].orbital_radius * cos(bodies[parent].orbit * DEG_TO_RAD),
                     0.0,
@@ -308,21 +320,18 @@ void drawBody(int n)
                   0.0,
                  bodies[n].orbital_radius * sin(bodies[n].orbit * DEG_TO_RAD));
 
-    if(n == 0)
-    {
-      // draw sun axis
-      glColor3f(1.0, 1.0, 1.0);
-      glBegin(GL_LINES);
-      glVertex3f(0.0, 1.5 * bodies[n].radius, 0.0);
-      glVertex3f(0.0, -1.5 * bodies[n].radius, 0.0);
-      glEnd();
-    }
-
     // Tatilt: tilted axis
-    glRotatef(bodies[n].axis_tilt, 0.0, 1.0, 0.0);
+    glRotatef(bodies[n].axis_tilt, 0.0, 0.0, 1.0);
+
+    // draw axis
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_LINES);
+    glVertex3f(0.0, 1.5 * bodies[n].radius, 0.0);
+    glVertex3f(0.0, -1.5 * bodies[n].radius, 0.0);
+    glEnd();
 
     // Tspin: spin
-    glRotatef(bodies[n].spin * 0.05, 0.0, 1.0, 0.0);
+    glRotatef(bodies[n].spin , 0.0, 1.0, 0.0);
 
     // Tvert:
     glRotatef(90.0, 1.0, 0.0, 0.0);
@@ -368,7 +377,7 @@ void display(void)
   /* set the camera */
   setView();
 
-  if (draw_starfield) drawStarfield();
+  if (draw_starfield) drawStarfield(stars);
 
   if (draw_axs) drawAxes();
 
@@ -403,19 +412,28 @@ void keyboard(unsigned char key, int x, int y)
       draw_axs = !draw_axs;
       break;
 
-    case 44: // comma
-      // move to left in the xz plane
-      heading = lon - 90;
-      eyex += RUN_SPEED * sin(DEG_TO_RAD*heading);
-      eyez += RUN_SPEED * cos(DEG_TO_RAD*heading);
+    case 87: // W
+      // move to left
+      heading = 90;
+      eyey += RUN_SPEED * sin(DEG_TO_RAD*heading);
       break;
-    case 46: //dot
-      // move to right in the xz plane
+    case 83: // S
+      // move to right
+      heading = -90;
+      eyey += RUN_SPEED * sin(DEG_TO_RAD*heading);
+      break;
+    case 65: // A
+      // move to left
       heading = lon + 90;
       eyex += RUN_SPEED * sin(DEG_TO_RAD*heading);
       eyez += RUN_SPEED * cos(DEG_TO_RAD*heading);
       break;
-
+    case 68: // D
+      // move to right
+      heading = lon - 90;
+      eyex += RUN_SPEED * sin(DEG_TO_RAD*heading);
+      eyez += RUN_SPEED * cos(DEG_TO_RAD*heading);
+      break;
     case 27:  /* Escape key */
       exit(0);
   }
@@ -430,12 +448,12 @@ void cursor_keys(int key, int x, int y)
     /* To be completed */
     case GLUT_KEY_LEFT:
       // rotate to the left
-      temp = lon - TURN_ANGLE;
+      temp = lon + TURN_ANGLE;
       lon = temp;
       break;
     case GLUT_KEY_RIGHT:
       // rotate to the right
-      temp = lon + TURN_ANGLE;
+      temp = lon - TURN_ANGLE;
       lon = temp;
       break;
     case GLUT_KEY_PAGE_UP:
@@ -459,16 +477,16 @@ void cursor_keys(int key, int x, int y)
       lat = 0;
       break;
     case GLUT_KEY_UP:
-      // step forwards xz plane
-      heading = lon;
-      eyex -= RUN_SPEED * sin(DEG_TO_RAD*heading);
-      eyez -= RUN_SPEED * cos(DEG_TO_RAD*heading);
-      break;
-    case GLUT_KEY_DOWN:
-      // step backwards xz plane
+      // step forwards 
       heading = lon;
       eyex += RUN_SPEED * sin(DEG_TO_RAD*heading);
       eyez += RUN_SPEED * cos(DEG_TO_RAD*heading);
+      break;
+    case GLUT_KEY_DOWN:
+      // step backwards
+      heading = lon;
+      eyex -= RUN_SPEED * sin(DEG_TO_RAD*heading);
+      eyez -= RUN_SPEED * cos(DEG_TO_RAD*heading);
       break;
   }
 } 
@@ -482,6 +500,7 @@ int main(int argc, char** argv)
   glutCreateWindow ("COMP27112 Exercise 2");
   glutFullScreen();
   init();
+  starfieldGenerator(stars);
   glutDisplayFunc (display); 
   glutReshapeFunc (reshape);
   glutKeyboardFunc (keyboard);
