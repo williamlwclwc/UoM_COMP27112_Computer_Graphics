@@ -71,7 +71,8 @@ float myRand (void)
 
 void starfieldGenerator(float *stars)
 {
-  for(int i = 0; i < 3000; i++)
+  int i;
+  for(i = 0; i < 3000; i++)
   {
     stars[i] = (myRand()-myRand())*300*MILLION;
   }
@@ -82,7 +83,8 @@ void drawStarfield (float *stars)
   /* This is for you to complete. */
   glBegin(GL_POINTS);
   glColor3f(1, 1, 1);
-  for(int i = 0; i < 3000; i++)
+  int i;
+  for(i = 0; i < 3000; i++)
   {
     glVertex3f(stars[i], stars[i+1], stars[i+3]);
   }
@@ -173,7 +175,7 @@ void setView (void) {
     /* This is for you to complete. */
     // from earth
     gluLookAt(bodies[3].orbital_radius * cos(bodies[3].orbit * DEG_TO_RAD),
-              bodies[3].radius * 1.2,
+              bodies[3].radius * 2.0,
               bodies[3].orbital_radius * sin(bodies[3].orbit * DEG_TO_RAD),
               0.0, 0.0, 0.0,
               0.0, 1.0, 0.0);
@@ -262,7 +264,8 @@ void drawOrbit (int n)
 
     glColor3f(bodies[n].r, bodies[n].g, bodies[n].b);
     float x, z;
-    for(int i = 0; i <= 400; i = i+step)
+    int i;
+    for(i = 0; i <= 400; i = i+step)
     {
       x = orb_len * cos(i * DEG_TO_RAD);
       z = orb_len * sin(i * DEG_TO_RAD);
