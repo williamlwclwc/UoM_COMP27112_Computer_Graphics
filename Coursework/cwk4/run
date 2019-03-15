@@ -1,0 +1,4 @@
+#!/bin/bash
+
+g++ HelloCV.cpp -o HelloCV `pkg-config --cflags --libs opencv`
+./HelloCV
