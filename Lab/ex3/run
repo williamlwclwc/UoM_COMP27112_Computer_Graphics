@@ -1,0 +1,4 @@
+#!/bin/bash
+
+g++ ex3.cpp -o ex3 `pkg-config --cflags --libs opencv`
+./ex3
