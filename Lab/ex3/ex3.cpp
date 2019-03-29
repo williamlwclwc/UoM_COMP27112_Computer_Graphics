@@ -5,6 +5,12 @@
 
 using namespace cv;
 Mat image, image_greyscale, image_blurred, image_difference, image_difference_hist;
+// used for calHist
+int histSize = 256;
+float range[] = { 0, 256 } ;
+const float* histRange = { range };
+Scalar hist_mean, hist_std;
+String text;
 
 Mat drawHist(Mat hist, int scale)
 {
@@ -42,6 +48,14 @@ void on_trackbar(int slider, void* userdata)
     imshow("Blurred Image", image_blurred);
     image_difference = image_greyscale - image_blurred + 128;
     imshow("Difference Image", image_difference);
+    // update histogram
+    calcHist(&image_difference, 1, 0, Mat(), image_difference_hist, 1, &histSize, &histRange, true, false);
+    normalize(image_difference_hist, image_difference_hist, 0, 512, NORM_MINMAX, -1, Mat() );
+    meanStdDev(image_difference, hist_mean, hist_std);
+    text = "mean: " + std::to_string(hist_mean[0]) + " std: " + std::to_string(hist_std[0]);
+    image_difference_hist = drawHist(image_difference_hist, 2);
+    putText(image_difference_hist, text, cvPoint(30,30), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+    imshow("Histogram of difference image", image_difference_hist);
 }
 
 int main(int argc, char *argv[])
@@ -57,10 +71,10 @@ int main(int argc, char *argv[])
     cvtColor(image, image_greyscale, COLOR_BGR2GRAY);
 
     int slider = 5; // initial slider value
-    namedWindow( "Original Image", WINDOW_AUTOSIZE );
-    namedWindow( "Blurred Image", WINDOW_AUTOSIZE);
-    namedWindow( "Difference Image", WINDOW_AUTOSIZE);
-    imshow( "Original Image", image); // show original image
+    namedWindow("Original Image", WINDOW_AUTOSIZE );
+    namedWindow("Blurred Image", WINDOW_AUTOSIZE);
+    namedWindow("Difference Image", WINDOW_AUTOSIZE);
+    imshow("Original Image", image); // show original image
     GaussianBlur(image_greyscale, image_blurred, Size(slider, slider),0);
     imshow("Blurred Image", image_blurred); // show initial blurred image
     image_difference = image_greyscale - image_blurred + 128; // initial noise image
@@ -68,9 +82,14 @@ int main(int argc, char *argv[])
     imshow("Difference Image", image_difference); // show initial noise image
 
     // show histogram
-    // namedWindow( "Histogram of difference image");
-    // image_difference_hist = drawHist(image_difference, 1);
-    // imshow( "Histogram of difference image", image_difference_hist);
+    namedWindow( "Histogram of difference image");
+    calcHist(&image_difference, 1, 0, Mat(), image_difference_hist, 1, &histSize, &histRange, true, false);
+    normalize(image_difference_hist, image_difference_hist, 0, 256*2, NORM_MINMAX, -1, Mat() );
+    meanStdDev(image_difference, hist_mean, hist_std);
+    text = "mean: " + std::to_string(hist_mean[0]) + " std: " + std::to_string(hist_std[0]);
+    image_difference_hist = drawHist(image_difference_hist, 2);
+    putText(image_difference_hist, text, cvPoint(30,30), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200,200,250), 1, CV_AA);
+    imshow("Histogram of difference image", image_difference_hist);
 
     waitKey(0);
     return 0;
