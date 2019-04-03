@@ -1,0 +1,4 @@
+#!/bin/bash
+
+g++ cwk5.cpp -o cwk5 `pkg-config --cflags --libs opencv`
+./cwk5

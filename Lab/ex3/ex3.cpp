@@ -4,7 +4,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;
-Mat image, image_greyscale, image_blurred, image_difference, image_difference_hist;
+Mat image, image_grayscale, image_blurred, image_difference, image_difference_hist;
 // used for calHist
 int histSize = 256;
 float range[] = { 0, 256 } ;
@@ -44,9 +44,9 @@ void on_trackbar(int slider, void* userdata)
         slider++;
     }
     // update image
-    GaussianBlur(image_greyscale, image_blurred, Size(slider, slider),0);
+    GaussianBlur(image_grayscale, image_blurred, Size(slider, slider),0, 0);
     imshow("Blurred Image", image_blurred);
-    image_difference = image_greyscale - image_blurred + 128;
+    image_difference = image_grayscale - image_blurred + 128;
     imshow("Difference Image", image_difference);
     // update histogram
     calcHist(&image_difference, 1, 0, Mat(), image_difference_hist, 1, &histSize, &histRange, true, false);
@@ -68,16 +68,16 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    cvtColor(image, image_greyscale, COLOR_BGR2GRAY);
+    cvtColor(image, image_grayscale, COLOR_RGB2GRAY);
 
     int slider = 5; // initial slider value
     namedWindow("Original Image", WINDOW_AUTOSIZE );
     namedWindow("Blurred Image", WINDOW_AUTOSIZE);
     namedWindow("Difference Image", WINDOW_AUTOSIZE);
     imshow("Original Image", image); // show original image
-    GaussianBlur(image_greyscale, image_blurred, Size(slider, slider),0);
+    GaussianBlur(image_grayscale, image_blurred, Size(slider, slider), 0, 0);
     imshow("Blurred Image", image_blurred); // show initial blurred image
-    image_difference = image_greyscale - image_blurred + 128; // initial noise image
+    image_difference = image_grayscale - image_blurred + 128; // initial noise image
     createTrackbar("Kernel Size", "Blurred Image", &slider, 100, on_trackbar);
     imshow("Difference Image", image_difference); // show initial noise image
 
@@ -92,5 +92,7 @@ int main(int argc, char *argv[])
     imshow("Histogram of difference image", image_difference_hist);
 
     waitKey(0);
+    imwrite("difference.jpg", image_difference);
+    imwrite("histogram.jpg", image_difference_hist);
     return 0;
 }
