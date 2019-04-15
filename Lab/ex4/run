@@ -1,0 +1,4 @@
+#!/bin/bash
+
+g++ ex4.cpp -o ex4 `pkg-config --cflags --libs opencv`
+./ex4
