@@ -102,12 +102,12 @@ void canny_on_track(int, void*)
 {
     // apply threshold
     threshold(image_grayscale, image_threshold, thresh, 200, CV_THRESH_BINARY);
-    // imshow("Threshold Image", image_threshold);
+    imshow("Threshold Image", image_threshold);
     if(kernel_size % 2 == 0) 
     {
         kernel_size++;
     }
-    GaussianBlur(image_grayscale, image_edges, Size(kernel_size, kernel_size),0, 0);
+    GaussianBlur(image_threshold, image_edges, Size(kernel_size, kernel_size),0, 0);
     Canny(image_edges, image_edges, thresh_min, thresh_max);
     imshow("Canny filter Image", image_edges);
     // apply Hough transfermation
@@ -145,10 +145,14 @@ int main(int argc, char *argv[])
     }
 
     // namedWindow("Original Image", WINDOW_AUTOSIZE);
-    namedWindow("Grayscale Image", WINDOW_AUTOSIZE);
-    namedWindow("Canny filter Image", WINDOW_AUTOSIZE);
-    namedWindow("Horizon Image", WINDOW_AUTOSIZE);
-    // namedWindow("Threshold Image", WINDOW_AUTOSIZE);
+    namedWindow("Grayscale Image", WINDOW_NORMAL);
+    cvResizeWindow("Grayscale Image", 500, 500);
+    namedWindow("Canny filter Image", WINDOW_NORMAL);
+    cvResizeWindow("Canny filter Image", 500, 500);
+    namedWindow("Horizon Image", WINDOW_NORMAL);
+    cvResizeWindow("Horizon Image", 500, 500);
+    namedWindow("Threshold Image", WINDOW_NORMAL);
+    cvResizeWindow("Threshold Image", 500, 500);
     // imshow("Original Image", image); // show original image
 
     // convert into grayscale
@@ -156,14 +160,14 @@ int main(int argc, char *argv[])
     imshow("Grayscale Image", image_grayscale); // show grayscale image
     // apply threshold
     threshold(image_grayscale, image_threshold, thresh, 200, CV_THRESH_BINARY);
-    // imshow("Threshold Image", image_threshold);
-    // createTrackbar("Thresh value:", "Threshold Image", &thresh, 200, canny_on_track);
+    imshow("Threshold Image", image_threshold);
+    createTrackbar("Thresh value:", "Threshold Image", &thresh, 200, canny_on_track);
     // apply Canny filter
     if(kernel_size % 2 == 0) 
     {
         kernel_size++;
     }
-    GaussianBlur(image_grayscale, image_edges, Size(kernel_size, kernel_size),0, 0);
+    GaussianBlur(image_threshold, image_edges, Size(kernel_size, kernel_size),0, 0);
     Canny(image_edges, image_edges, thresh_min, thresh_max);
     imshow("Canny filter Image", image_edges);
     createTrackbar("Gaussian blur kernel size", "Canny filter Image", &kernel_size, 200, canny_on_track);
